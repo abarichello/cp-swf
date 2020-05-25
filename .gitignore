@@ -1,7 +1,8 @@
+cp-swf-archive/
+*.code-workspace
+*.html
+
 # elm-package generated files
 elm-stuff
 # elm-repl generated files
 repl-temp-*
-cp-swf-data/
-*.code-workspace
-*.html
