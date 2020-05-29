@@ -1,12 +1,13 @@
-module Archive exposing (..)
+module Archive exposing (defaultSelectedPath, maxTreeDepth, pathHeader, treeExample)
 
 import Tree exposing (Tree, tree)
 
 
-testStringLists : List String
-testStringLists =
-    -- [ ".", "2017", "parties", "waddle-on", "town.swf" ]
-    [ ".", "2017", "parties", "waddle-on", "cove.swf" ]
+
+-- testStringLists : List String
+-- testStringLists =
+--     -- [ ".", "2017", "parties", "waddle-on", "town.swf" ]
+--     [ ".", "2017", "parties", "waddle-on", "cove.swf" ]
 
 
 treeExample : Tree String
