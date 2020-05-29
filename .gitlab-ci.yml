@@ -1,5 +1,8 @@
 image: barichello/elm:cp-swf
 
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
 stages:
   - build
   - deploy
@@ -26,7 +29,8 @@ pages:
     - git fetch
     - git checkout pages
     - rm -f *.md
-    - mv index.html LICENSE ./public
+    - mkdir -p public
+    - mv cp-swf-archive index.html LICENSE public
   artifacts:
     paths:
       - public
