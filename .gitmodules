@@ -1,0 +1,3 @@
+[submodule "cp-swf-archive"]
+	path = cp-swf-archive
+	url = git@gitlab.com:barichello/cp-swf-archive

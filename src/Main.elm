@@ -19,8 +19,7 @@ type alias Model =
 
 
 type Msg
-    = None
-    | ResetTree
+    = ResetTree
     | TraverseTree String
     | LoadSWF
 
@@ -49,9 +48,6 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        None ->
-            ( model, Cmd.none )
-
         ResetTree ->
             ( { model
                 | zipper = fromTree treeExample
@@ -126,14 +122,14 @@ view model =
     let
         directoryTree =
             zipperToHtml model.zipper
+
+        pathTxt =
+            text ("Path: " ++ model.loadedPath)
     in
     div []
         [ div [ id "header" ] [ text "https://github.com/aBARICHELLO/cp-swf" ]
-        , div [] (text ("Path: " ++ model.loadedPath) :: directoryTree)
-        , div [ id "selector-header" ]
-            [ button [ id "load-swf", onClick LoadSWF ] [ text "Load" ]
-            , button [ id "reset-tree", onClick ResetTree ] [ text "Reset" ]
-            ]
+        , div [] (pathTxt :: directoryTree)
+        , div [ id "selector-header" ] [ button [ id "reset-tree", onClick ResetTree ] [ text "Reset" ] ]
         , div [ id "swf-content" ]
             [ embed [ src model.loadedPath, width 2560, height 1440 ] []
             ]
