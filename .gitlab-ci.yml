@@ -20,17 +20,18 @@ make:
   artifacts:
     paths:
       - main.js
+      - index.html
 
 pages:
   stage: deploy
   dependencies:
     - make
   script:
-    - git fetch
-    - git checkout pages
     - rm -f *.md
     - mkdir -p public
     - mv cp-swf-archive index.html main.js LICENSE public
+    - git fetch
+    - git checkout pages
   artifacts:
     paths:
       - public
