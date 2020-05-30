@@ -131,6 +131,6 @@ view model =
         , div [] (pathTxt :: directoryTree)
         , div [ id "selector-header" ] [ button [ id "reset-tree", onClick ResetTree ] [ text "Reset" ] ]
         , div [ id "swf-content" ]
-            [ embed [ src model.loadedPath, width 2560, height 1440 ] []
+            [ embed [ id "swf", src model.loadedPath, width 2560, height 1440 ] []
             ]
         ]

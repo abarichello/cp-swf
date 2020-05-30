@@ -1,0 +1,39 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>cp-swf</title>
+    <script src="main.js"></script>
+</head>
+
+<body>
+    <div id="elm"></div>
+    <script>
+        var elm = Elm.Main.init({
+            node: document.getElementById("elm")
+        })
+
+        // All this code was written to support this project on Chrome-based browsers
+        // Updating the src attribute is enough on Firefox/Opera/etc to change the SWF but
+        // because of a 'wontfix' bug on Chrome you have to remove and readd the element for it to update
+        // https://bugs.chromium.org/p/chromium/issues/detail?id=69648
+
+        function mutationCallback() {
+            const swfContent = document.getElementById("swf-content")
+            const embed = document.querySelector("#swf-content embed")
+            const clone = embed.cloneNode()
+            swfContent.removeChild(embed)
+            swfContent.appendChild(clone)
+            observeMutation(mutationCallback)
+        }
+
+        function observeMutation(callback) {
+            const mut = new MutationObserver(callback)
+            mut.observe(document.getElementById("swf"), { attributes: true, childList: true, subtree: true })
+        }
+
+        observeMutation(mutationCallback)
+    </script>
+</body>
+
+</html>

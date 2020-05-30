@@ -15,11 +15,11 @@ analyse:
 make:
   stage: build
   script:
-    - elm make src/Main.elm --output=index.html --optimize
+    - elm make src/Main.elm --output=main.js --optimize
     # - uglifyjs main.js --compress sequences=true,conditionals=true,booleans=true --mangle --output main.js
   artifacts:
     paths:
-      - index.html
+      - main.js
 
 pages:
   stage: deploy
@@ -30,7 +30,7 @@ pages:
     - git checkout pages
     - rm -f *.md
     - mkdir -p public
-    - mv cp-swf-archive index.html LICENSE public
+    - mv cp-swf-archive index.html main.js LICENSE public
   artifacts:
     paths:
       - public

@@ -1,6 +1,8 @@
 cp-swf-archive/
 *.code-workspace
 *.html
+!index.html
+main.js
 
 # elm-package generated files
 elm-stuff
