@@ -29,7 +29,7 @@ pages:
   script:
     - rm -f *.md
     - mkdir -p public
-    - mv cp-swf-archive index.html main.js LICENSE public
+    - mv cp-swf-archive index.html main.js README.md LICENSE public
     - git fetch
     - git checkout pages
   artifacts:

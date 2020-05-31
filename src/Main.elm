@@ -1,9 +1,11 @@
 module Main exposing (Msg(..), main, update, view)
 
 import Archive exposing (defaultSelectedPath, maxTreeDepth, pathHeader, treeExample)
+import Bootstrap.Navbar as Navbar
 import Browser
+import Color exposing (Color)
 import Html exposing (Html, button, div, embed, li, text)
-import Html.Attributes exposing (height, id, src, width)
+import Html.Attributes exposing (height, href, id, src, width)
 import Html.Events exposing (onClick)
 import Tree exposing (Tree, label)
 import Tree.Zipper exposing (Zipper, findNext, fromTree)
@@ -15,6 +17,7 @@ type alias Model =
     , zipper : Zipper String
     , selectedPath : List String
     , loadedPath : String
+    , navbarState : Navbar.State
     }
 
 
@@ -22,6 +25,7 @@ type Msg
     = ResetTree
     | TraverseTree String
     | LoadSWF
+    | NavbarMsg Navbar.State
 
 
 main : Program () Model Msg
@@ -36,12 +40,17 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
+    let
+        ( navbarState, navbarCmd ) =
+            Navbar.initialState NavbarMsg
+    in
     ( { tree = treeExample
       , zipper = fromTree treeExample
       , selectedPath = defaultSelectedPath
       , loadedPath = "./cp-swf-archive/2017/parties/waddle-on/town.swf"
+      , navbarState = navbarState
       }
-    , Cmd.none
+    , navbarCmd
     )
 
 
@@ -90,6 +99,9 @@ update msg model =
         LoadSWF ->
             ( { model | loadedPath = makeSWFPath model }, Cmd.none )
 
+        NavbarMsg state ->
+            ( { model | navbarState = state }, Cmd.none )
+
 
 makeSWFPath : Model -> String
 makeSWFPath model =
@@ -125,10 +137,22 @@ view model =
 
         pathTxt =
             text ("Path: " ++ model.loadedPath)
+
+        navbar =
+            Navbar.config NavbarMsg
+                |> Navbar.withAnimation
+                |> Navbar.darkCustom (Color.rgb255 0 51 102)
+                |> Navbar.brand [ href "#" ] [ text "CP-SWF" ]
+                |> Navbar.items
+                    [ Navbar.itemLink [ href "https://gitlab.com/BARICHELLO/cp-swf-archive" ] [ text "Archive" ]
+                    , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf" ] [ text "Source code" ]
+                    , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf/blob/master/LICENSE" ] [ text "License" ]
+                    , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf/blob/master/README.md" ] [ text "About" ]
+                    ]
+                |> Navbar.view model.navbarState
     in
     div []
-        [ div [ id "header" ] [ text "https://github.com/aBARICHELLO/cp-swf" ]
-        , div [] (pathTxt :: directoryTree)
+        [ navbar
         , div [ id "selector-header" ] [ button [ id "reset-tree", onClick ResetTree ] [ text "Reset" ] ]
         , div [ id "swf-content" ]
             [ embed [ id "swf", src model.loadedPath, width 2560, height 1440 ] []
