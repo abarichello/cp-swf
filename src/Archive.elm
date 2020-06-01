@@ -3,13 +3,6 @@ module Archive exposing (defaultSelectedPath, maxTreeDepth, pathHeader, treeExam
 import Tree exposing (Tree, tree)
 
 
-
--- testStringLists : List String
--- testStringLists =
---     -- [ ".", "2017", "parties", "waddle-on", "town.swf" ]
---     [ ".", "2017", "parties", "waddle-on", "cove.swf" ]
-
-
 treeExample : Tree String
 treeExample =
     tree "."
@@ -45,4 +38,4 @@ pathHeader =
 
 defaultSelectedPath : List String
 defaultSelectedPath =
-    List.append [ pathHeader ] [ "2017", "waddle-on", "town.swf" ]
+    [ "2017", "parties", "waddle-on", "town.swf" ]

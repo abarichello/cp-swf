@@ -1,8 +1,13 @@
 module Utils exposing (listToString)
 
 
-listToString : List String -> String -> String
-listToString list acc =
+listToString : List String -> String
+listToString list =
+    listToStringAux list ""
+
+
+listToStringAux : List String -> String -> String
+listToStringAux list acc =
     let
         head =
             List.head list
@@ -15,4 +20,4 @@ listToString list acc =
             acc
 
         Just el ->
-            listToString tail (acc ++ el)
+            listToStringAux tail (acc ++ el)

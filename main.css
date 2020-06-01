@@ -6,8 +6,6 @@
     position: fixed;
     left: 1%;
     top: 0%;
-    width: 25%;
-    height: 50%;
     background-color: rgba(0, 0, 0, 0);
 }
 
@@ -20,16 +18,16 @@
 }
 
 .modal-header {
-    background-color: rgba(0, 0, 0, 0.77);
+    background-color: rgba(0, 0, 0, 0.88);
 }
 
 .modal-content {
     color: whitesmoke;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.77);
+    border: 1px solid whitesmoke;
 }
 
 #reset-button,
 #hide-button {
     border-left-width: 10px;
-    margin-left: 2em;
 }

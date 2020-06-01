@@ -91,7 +91,7 @@ update msg model =
                     if String.endsWith ".swf" child then
                         let
                             tmpModel =
-                                { model | selectedPath = selectedPath }
+                                { model | selectedPath = pathHeader :: selectedPath }
                         in
                         makeSWFPath tmpModel
 
@@ -122,7 +122,7 @@ makeSWFPath model =
         list =
             List.intersperse "/" model.selectedPath
     in
-    listToString list pathHeader
+    listToString list
 
 
 zipperToHtml : Zipper String -> List (Html Msg)
@@ -154,9 +154,6 @@ toggleModalVis model =
 view : Model -> Html Msg
 view model =
     let
-        directoryTree =
-            zipperToHtml model.zipper
-
         navbarItems =
             Navbar.items
                 [ Navbar.itemLink [ onClick (ToggleModal (toggleModalVis model)), href "#" ] [ text "Files" ]
@@ -174,28 +171,37 @@ view model =
                 |> navbarItems
                 |> Navbar.view model.navbarState
 
+        modalHeader =
+            [ text "Files"
+            , Button.button
+                [ Button.outlinePrimary
+                , Button.attrs [ id "reset-button", onClick ResetTree ]
+                ]
+                [ text "Reset" ]
+            , Button.button
+                [ Button.outlinePrimary
+                , Button.attrs [ id "hide-button", onClick (ToggleModal Modal.hidden) ]
+                ]
+                [ text "Hide" ]
+            ]
+
         modalBody =
-            text ("Path: " ++ model.loadedPath)
+            zipperToHtml model.zipper
+
+        modalFooter =
+            let
+                list =
+                    List.intersperse "/" model.selectedPath
+            in
+            [ text (listToString list) ]
 
         dirModal =
             Grid.container []
                 [ Modal.config None
                     |> Modal.small
-                    |> Modal.h5 []
-                        [ text "Files"
-                        , Button.button
-                            [ Button.outlinePrimary
-                            , Button.attrs [ id "reset-button", onClick ResetTree ]
-                            ]
-                            [ text "Reset" ]
-                        , Button.button
-                            [ Button.outlinePrimary
-                            , Button.attrs [ id "hide-button", onClick (ToggleModal Modal.hidden) ]
-                            ]
-                            [ text "Hide" ]
-                        ]
-                    |> Modal.body [] [ modalBody ]
-                    |> Modal.footer [] directoryTree
+                    |> Modal.h5 [] modalHeader
+                    |> Modal.body [] modalBody
+                    |> Modal.footer [] modalFooter
                     |> Modal.view model.modalVisibility
                 ]
     in
