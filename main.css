@@ -1,0 +1,35 @@
+.close {
+    display: none;
+}
+
+.modal-sm {
+    position: fixed;
+    left: 1%;
+    top: 0%;
+    width: 25%;
+    height: 50%;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.modal {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.modal-backdrop {
+    display: none;
+}
+
+.modal-header {
+    background-color: rgba(0, 0, 0, 0.77);
+}
+
+.modal-content {
+    color: whitesmoke;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+#reset-button,
+#hide-button {
+    border-left-width: 10px;
+    margin-left: 2em;
+}

@@ -1,9 +1,12 @@
 module Main exposing (Msg(..), main, update, view)
 
 import Archive exposing (defaultSelectedPath, maxTreeDepth, pathHeader, treeExample)
+import Bootstrap.Button as Button
+import Bootstrap.Grid as Grid
+import Bootstrap.Modal as Modal
 import Bootstrap.Navbar as Navbar
 import Browser
-import Color exposing (Color)
+import Color
 import Html exposing (Html, button, div, embed, li, text)
 import Html.Attributes exposing (height, href, id, src, width)
 import Html.Events exposing (onClick)
@@ -18,14 +21,17 @@ type alias Model =
     , selectedPath : List String
     , loadedPath : String
     , navbarState : Navbar.State
+    , modalVisibility : Modal.Visibility
     }
 
 
 type Msg
-    = ResetTree
+    = None
+    | ResetTree
     | TraverseTree String
     | LoadSWF
     | NavbarMsg Navbar.State
+    | ToggleModal Modal.Visibility
 
 
 main : Program () Model Msg
@@ -49,6 +55,7 @@ init =
       , selectedPath = defaultSelectedPath
       , loadedPath = "./cp-swf-archive/2017/parties/waddle-on/town.swf"
       , navbarState = navbarState
+      , modalVisibility = Modal.shown
       }
     , navbarCmd
     )
@@ -57,6 +64,9 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        None ->
+            ( model, Cmd.none )
+
         ResetTree ->
             ( { model
                 | zipper = fromTree treeExample
@@ -102,6 +112,9 @@ update msg model =
         NavbarMsg state ->
             ( { model | navbarState = state }, Cmd.none )
 
+        ToggleModal vis ->
+            ( { model | modalVisibility = vis }, Cmd.none )
+
 
 makeSWFPath : Model -> String
 makeSWFPath model =
@@ -129,31 +142,66 @@ zipperToHtml tr =
         children
 
 
+toggleModalVis : Model -> Modal.Visibility
+toggleModalVis model =
+    if model.modalVisibility == Modal.shown then
+        Modal.hidden
+
+    else
+        Modal.shown
+
+
 view : Model -> Html Msg
 view model =
     let
         directoryTree =
             zipperToHtml model.zipper
 
-        pathTxt =
-            text ("Path: " ++ model.loadedPath)
+        navbarItems =
+            Navbar.items
+                [ Navbar.itemLink [ onClick (ToggleModal (toggleModalVis model)), href "#" ] [ text "Files" ]
+                , Navbar.itemLink [ href "https://gitlab.com/BARICHELLO/cp-swf-archive" ] [ text "Archive" ]
+                , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf" ] [ text "Source code" ]
+                , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf/blob/master/LICENSE" ] [ text "License" ]
+                , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf/blob/master/README.md" ] [ text "About" ]
+                ]
 
         navbar =
             Navbar.config NavbarMsg
                 |> Navbar.withAnimation
                 |> Navbar.darkCustom (Color.rgb255 0 51 102)
                 |> Navbar.brand [ href "#" ] [ text "CP-SWF" ]
-                |> Navbar.items
-                    [ Navbar.itemLink [ href "https://gitlab.com/BARICHELLO/cp-swf-archive" ] [ text "Archive" ]
-                    , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf" ] [ text "Source code" ]
-                    , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf/blob/master/LICENSE" ] [ text "License" ]
-                    , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf/blob/master/README.md" ] [ text "About" ]
-                    ]
+                |> navbarItems
                 |> Navbar.view model.navbarState
+
+        modalBody =
+            text ("Path: " ++ model.loadedPath)
+
+        dirModal =
+            Grid.container []
+                [ Modal.config None
+                    |> Modal.small
+                    |> Modal.h5 []
+                        [ text "Files"
+                        , Button.button
+                            [ Button.outlinePrimary
+                            , Button.attrs [ id "reset-button", onClick ResetTree ]
+                            ]
+                            [ text "Reset" ]
+                        , Button.button
+                            [ Button.outlinePrimary
+                            , Button.attrs [ id "hide-button", onClick (ToggleModal Modal.hidden) ]
+                            ]
+                            [ text "Hide" ]
+                        ]
+                    |> Modal.body [] [ modalBody ]
+                    |> Modal.footer [] directoryTree
+                    |> Modal.view model.modalVisibility
+                ]
     in
     div []
         [ navbar
-        , div [ id "selector-header" ] [ button [ id "reset-tree", onClick ResetTree ] [ text "Reset" ] ]
+        , dirModal
         , div [ id "swf-content" ]
             [ embed [ id "swf", src model.loadedPath, width 2560, height 1440 ] []
             ]

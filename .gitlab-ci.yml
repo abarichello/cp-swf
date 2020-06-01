@@ -21,6 +21,7 @@ make:
     paths:
       - main.js
       - index.html
+      - main.css
 
 pages:
   stage: deploy
@@ -28,8 +29,8 @@ pages:
     - make
   script:
     - rm -f *.md
-    - mkdir -p public
-    - mv cp-swf-archive index.html main.js README.md LICENSE public
+    - mkdir -p public css
+    - mv cp-swf-archive index.html main.js main.css public
     - git fetch
     - git checkout pages
   artifacts:
