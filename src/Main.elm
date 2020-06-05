@@ -1,6 +1,13 @@
 module Main exposing (Msg(..), main, update, view)
 
-import Archive exposing (defaultSelectedPath, maxTreeDepth, pathHeader, treeExample)
+import Archive
+    exposing
+        ( defaultSelectedPath
+        , makeArchive
+        , maxTreeDepth
+        , pathHeader
+        , testStringLists
+        )
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Modal as Modal
@@ -50,8 +57,8 @@ init =
         ( navbarState, navbarCmd ) =
             Navbar.initialState NavbarMsg
     in
-    ( { tree = treeExample
-      , zipper = fromTree treeExample
+    ( { tree = makeArchive testStringLists
+      , zipper = fromTree (makeArchive testStringLists)
       , selectedPath = defaultSelectedPath
       , loadedPath = "./cp-swf-archive/2017/parties/waddle-on/town.swf"
       , navbarState = navbarState
@@ -69,7 +76,7 @@ update msg model =
 
         ResetTree ->
             ( { model
-                | zipper = fromTree treeExample
+                | zipper = fromTree (makeArchive testStringLists)
                 , selectedPath = defaultSelectedPath
               }
             , Cmd.none

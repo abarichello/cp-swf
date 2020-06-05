@@ -6,12 +6,13 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
+            "avh4/elm-color": "1.0.0",
             "elm/browser": "1.0.2",
             "elm/core": "1.0.5",
             "elm/html": "1.0.0",
+            "elm-community/list-extra": "8.2.4",
             "rundis/elm-bootstrap": "5.2.0",
-            "zwilias/elm-rosetree": "1.5.0",
-            "avh4/elm-color": "1.0.0"
+            "zwilias/elm-rosetree": "1.5.0"
         },
         "indirect": {
             "elm/json": "1.1.3",
