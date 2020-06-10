@@ -1,16 +1,15 @@
 module Archive exposing
-    ( defaultSelectedPath
-    , makeArchive
-    , makeTrees
+    ( Archive
+    , archiveDecoder
+    , defaultSelectedPath
+    , emptyArchive
     , maxTreeDepth
     , pathHeader
     , testStringLists
     )
 
-import List.Extra exposing (getAt)
-import Tree as Tree exposing (Tree, appendChild, singleton)
-import Tree.Diff as Diff
-import Tree.Zipper as Zipper exposing (Zipper)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Field as Field
 
 
 maxTreeDepth : Int
@@ -30,78 +29,85 @@ defaultSelectedPath =
 
 testStringLists : List (List String)
 testStringLists =
+    --
     [ [ "2017", "parties", "waddle-on", "town.swf" ]
     , [ "2017", "parties", "waddle-on", "cove.swf" ]
     , [ "2017", "parties", "waddle-on", "skivillage.swf" ]
+    , [ "2017", "parties", "default", "town.swf" ]
+    , [ "2016", "parties", "default", "dock.swf" ]
     ]
 
 
-makeArchive : List (List String) -> Tree String
-makeArchive list =
-    list |> makeTrees |> mergeTrees
+type alias Archive =
+    List Node
 
 
-makeTrees : List (List String) -> List (Tree String)
-makeTrees list =
-    List.map (\l -> strListToTree l) list
+type Node
+    = Directory { name : String, contents : List Node }
+    | File String
+    | Report { directories : Int, files : Int }
 
 
-strListToTree : List String -> Tree String
-strListToTree list =
-    strListToTreeAux list (Zipper.fromTree (singleton "."))
+archiveDecoder : Decoder Archive
+archiveDecoder =
+    Decode.list nodeDecoder
 
 
-strListToTreeAux : List String -> Zipper String -> Tree String
-strListToTreeAux list zipper =
-    let
-        first =
-            List.head list
+nodeDecoder : Decoder Node
+nodeDecoder =
+    Field.require "type" Decode.string <|
+        \t ->
+            case t of
+                "directory" ->
+                    directoryDecoder
 
-        tail =
-            Maybe.withDefault [] (List.tail list)
-    in
-    case first of
-        Nothing ->
-            Zipper.toTree zipper
+                "file" ->
+                    fileDecoder
 
-        Just head ->
-            let
-                lastNode =
-                    zipper
-                        |> Zipper.lastDescendant
+                "report" ->
+                    reportDecoder
 
-                res =
-                    lastNode
-                        |> Zipper.replaceTree (Tree.appendChild (singleton head) (lastNode |> Zipper.tree))
-            in
-            strListToTreeAux tail res
+                _ ->
+                    Decode.fail "Invalid node"
 
 
-mergeTrees : List (Tree String) -> Tree String
-mergeTrees list =
-    mergeTreesAux list (singleton "cp-swf-archive")
+directoryDecoder : Decoder Node
+directoryDecoder =
+    Field.require "name" Decode.string <|
+        \name ->
+            Field.require "contents" (Decode.list nodeDecoder) <|
+                \contents ->
+                    Decode.succeed <|
+                        Directory
+                            { name = name
+                            , contents = contents
+                            }
 
 
-mergeTreesAux : List (Tree String) -> Tree String -> Tree String
-mergeTreesAux list acc =
-    let
-        firstTree =
-            Maybe.withDefault (singleton "") (getAt 0 list)
-
-        secondTree =
-            getAt 1 list
-
-        tail =
-            List.drop 2 list
-    in
-    case secondTree of
-        Nothing ->
-            acc
-
-        Just secTree ->
-            mergeTreesAux tail (Diff.mergeWith equalLabels firstTree secTree)
+fileDecoder : Decoder Node
+fileDecoder =
+    Field.require "name" Decode.string <| \name -> Decode.succeed (File name)
 
 
-equalLabels : String -> String -> Bool
-equalLabels a b =
-    a == b
+reportDecoder : Decoder Node
+reportDecoder =
+    Field.require "directories" Decode.int <|
+        \directories ->
+            Field.require "files"
+                Decode.int
+            <|
+                \files ->
+                    Decode.succeed
+                        (Report { directories = directories, files = files })
+
+
+emptyArchive : Archive
+emptyArchive =
+    [ Directory
+        { name = "."
+        , contents =
+            [ File "empty-archive"
+            ]
+        }
+    , Report { directories = 1, files = 1 }
+    ]

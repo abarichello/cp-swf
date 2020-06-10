@@ -1,30 +1,23 @@
 module Main exposing (Msg(..), main, update, view)
 
-import Archive
-    exposing
-        ( defaultSelectedPath
-        , makeArchive
-        , maxTreeDepth
-        , pathHeader
-        , testStringLists
-        )
+import Archive exposing (Archive, archiveDecoder, defaultSelectedPath, emptyArchive)
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Modal as Modal
 import Bootstrap.Navbar as Navbar
 import Browser
 import Color
-import Html exposing (Html, button, div, embed, li, text)
+import Html exposing (Html, button, div, embed, text)
 import Html.Attributes exposing (height, href, id, src, width)
 import Html.Events exposing (onClick)
-import Tree exposing (Tree, label)
-import Tree.Zipper exposing (Zipper, findNext, fromTree)
-import Utils exposing (listToString)
+import Json.Decode exposing (decodeString)
+import Requests exposing (ArchiveJSON(..), fetchArchive)
+import Utils exposing (errorToString, listToString)
 
 
 type alias Model =
-    { tree : Tree String
-    , zipper : Zipper String
+    { archive : Archive
+    , archiveStr : String
     , selectedPath : List String
     , loadedPath : String
     , navbarState : Navbar.State
@@ -34,6 +27,7 @@ type alias Model =
 
 type Msg
     = None
+    | RequestArchive ArchiveJSON
     | ResetTree
     | TraverseTree String
     | LoadSWF
@@ -56,15 +50,18 @@ init =
     let
         ( navbarState, navbarCmd ) =
             Navbar.initialState NavbarMsg
+
+        archiveRequest =
+            Cmd.map RequestArchive Requests.fetchArchive
     in
-    ( { tree = makeArchive testStringLists
-      , zipper = fromTree (makeArchive testStringLists)
+    ( { archive = emptyArchive
+      , archiveStr = ""
       , selectedPath = defaultSelectedPath
       , loadedPath = "./cp-swf-archive/2017/parties/waddle-on/town.swf"
       , navbarState = navbarState
       , modalVisibility = Modal.shown
       }
-    , navbarCmd
+    , Cmd.batch [ navbarCmd, archiveRequest ]
     )
 
 
@@ -74,42 +71,30 @@ update msg model =
         None ->
             ( model, Cmd.none )
 
+        RequestArchive response ->
+            case response of
+                JSON result ->
+                    let
+                        res =
+                            case result of
+                                Ok value ->
+                                    value
+
+                                Err err ->
+                                    errorToString err
+
+                        archive =
+                            decodeString archiveDecoder res
+                                |> Result.toMaybe
+                                |> Maybe.withDefault emptyArchive
+                    in
+                    ( { model | archive = archive }, Cmd.none )
+
         ResetTree ->
-            ( { model
-                | zipper = fromTree (makeArchive testStringLists)
-                , selectedPath = defaultSelectedPath
-              }
-            , Cmd.none
-            )
+            ( { model | selectedPath = defaultSelectedPath }, Cmd.none )
 
-        TraverseTree child ->
-            let
-                zipperChild =
-                    findNext (\c -> c == child) model.zipper
-
-                selectedPath =
-                    if List.length model.selectedPath == maxTreeDepth then
-                        [ child ]
-
-                    else
-                        List.append model.selectedPath [ child ]
-
-                loadedPath =
-                    if String.endsWith ".swf" child then
-                        let
-                            tmpModel =
-                                { model | selectedPath = pathHeader :: selectedPath }
-                        in
-                        makeSWFPath tmpModel
-
-                    else
-                        model.loadedPath
-            in
-            ( { model
-                | zipper = Maybe.withDefault model.zipper zipperChild
-                , selectedPath = selectedPath
-                , loadedPath = loadedPath
-              }
+        TraverseTree _ ->
+            ( model
             , Cmd.none
             )
 
@@ -130,23 +115,6 @@ makeSWFPath model =
             List.intersperse "/" model.selectedPath
     in
     listToString list
-
-
-zipperToHtml : Zipper String -> List (Html Msg)
-zipperToHtml tr =
-    let
-        children =
-            Tree.Zipper.children tr
-    in
-    List.map
-        (\c ->
-            let
-                txt =
-                    label c
-            in
-            li [ onClick (TraverseTree txt) ] [ text txt ]
-        )
-        children
 
 
 toggleModalVis : Model -> Modal.Visibility
@@ -193,7 +161,8 @@ view model =
             ]
 
         modalBody =
-            zipperToHtml model.zipper
+            -- zipperToHtml model.zipper
+            div [] []
 
         modalFooter =
             let
@@ -207,7 +176,7 @@ view model =
                 [ Modal.config None
                     |> Modal.small
                     |> Modal.h5 [] modalHeader
-                    |> Modal.body [] modalBody
+                    |> Modal.body [] [ modalBody ]
                     |> Modal.footer [] modalFooter
                     |> Modal.view model.modalVisibility
                 ]

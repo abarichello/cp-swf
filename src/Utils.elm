@@ -1,4 +1,6 @@
-module Utils exposing (listToString)
+module Utils exposing (errorToString, listToString)
+
+import Http exposing (Error(..))
 
 
 listToString : List String -> String
@@ -21,3 +23,22 @@ listToStringAux list acc =
 
         Just el ->
             listToStringAux tail (acc ++ el)
+
+
+errorToString : Http.Error -> String
+errorToString err =
+    case err of
+        Timeout ->
+            "Timeout exceeded"
+
+        NetworkError ->
+            "Network error"
+
+        BadStatus _ ->
+            "BadStatus"
+
+        BadBody _ ->
+            "Bad Body"
+
+        BadUrl url ->
+            "Malformed url: " ++ url
