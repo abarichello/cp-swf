@@ -1,24 +1,34 @@
 module Main exposing (Msg(..), main, update, view)
 
-import Archive exposing (Archive, archiveDecoder, defaultSelectedPath, emptyArchive)
+import Archive
+    exposing
+        ( Archive
+        , Node(..)
+        , archiveDecoder
+        , archiveToString
+        , defaultSWFPath
+        , defaultSelectedPath
+        , emptyArchive
+        , makeSWFPath
+        )
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
 import Bootstrap.Navbar as Navbar
 import Browser
 import Color
-import Html exposing (Html, button, div, embed, text)
+import Html exposing (Html, button, div, embed, strong, text)
 import Html.Attributes exposing (height, href, id, src, width)
 import Html.Events exposing (onClick)
 import Json.Decode exposing (decodeString)
 import Requests exposing (ArchiveJSON(..), fetchArchive)
-import Utils exposing (errorToString, listToString)
+import Utils exposing (errorToString)
 
 
 type alias Model =
     { archive : Archive
-    , archiveStr : String
-    , selectedPath : List String
+    , selectedPath : Archive
     , loadedPath : String
     , navbarState : Navbar.State
     , modalVisibility : Modal.Visibility
@@ -55,9 +65,8 @@ init =
             Cmd.map RequestArchive Requests.fetchArchive
     in
     ( { archive = emptyArchive
-      , archiveStr = ""
       , selectedPath = defaultSelectedPath
-      , loadedPath = "./cp-swf-archive/2017/parties/waddle-on/town.swf"
+      , loadedPath = defaultSWFPath
       , navbarState = navbarState
       , modalVisibility = Modal.shown
       }
@@ -99,22 +108,13 @@ update msg model =
             )
 
         LoadSWF ->
-            ( { model | loadedPath = makeSWFPath model }, Cmd.none )
+            ( { model | loadedPath = makeSWFPath model.archive }, Cmd.none )
 
         NavbarMsg state ->
             ( { model | navbarState = state }, Cmd.none )
 
         ToggleModal vis ->
             ( { model | modalVisibility = vis }, Cmd.none )
-
-
-makeSWFPath : Model -> String
-makeSWFPath model =
-    let
-        list =
-            List.intersperse "/" model.selectedPath
-    in
-    listToString list
 
 
 toggleModalVis : Model -> Modal.Visibility
@@ -147,29 +147,42 @@ view model =
                 |> Navbar.view model.navbarState
 
         modalHeader =
-            [ text "Files"
-            , Button.button
-                [ Button.outlinePrimary
-                , Button.attrs [ id "reset-button", onClick ResetTree ]
+            [ Grid.containerFluid []
+                [ Grid.row []
+                    [ Grid.col
+                        [ Col.xs6 ]
+                        [ text "File" ]
+                    , Grid.col
+                        [ Col.xs6 ]
+                        [ Button.button
+                            [ Button.outlinePrimary
+                            , Button.attrs [ id "reset-button", onClick ResetTree ]
+                            ]
+                            [ text "Reset" ]
+                        , Button.button
+                            [ Button.outlinePrimary
+                            , Button.attrs [ id "hide-button", onClick (ToggleModal Modal.hidden) ]
+                            ]
+                            [ text "Hide" ]
+                        ]
+                    ]
                 ]
-                [ text "Reset" ]
-            , Button.button
-                [ Button.outlinePrimary
-                , Button.attrs [ id "hide-button", onClick (ToggleModal Modal.hidden) ]
-                ]
-                [ text "Hide" ]
             ]
 
         modalBody =
-            -- zipperToHtml model.zipper
             div [] []
 
         modalFooter =
-            let
-                list =
-                    List.intersperse "/" model.selectedPath
-            in
-            [ text (listToString list) ]
+            Grid.containerFluid []
+                [ Grid.row []
+                    [ Grid.col [] [ strong [] [ text "Current path:" ] ]
+                    , Grid.col [] [ text (archiveToString model.archive) ]
+                    ]
+                , Grid.row []
+                    [ Grid.col [] [ strong [] [ text "Loaded file:" ] ]
+                    , Grid.col [] [ text model.loadedPath ]
+                    ]
+                ]
 
         dirModal =
             Grid.container []
@@ -177,7 +190,7 @@ view model =
                     |> Modal.small
                     |> Modal.h5 [] modalHeader
                     |> Modal.body [] [ modalBody ]
-                    |> Modal.footer [] modalFooter
+                    |> Modal.footer [] [ modalFooter ]
                     |> Modal.view model.modalVisibility
                 ]
     in
