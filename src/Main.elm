@@ -6,6 +6,7 @@ import Archive
         , Node(..)
         , archiveDecoder
         , archiveToString
+        , defaultFocusedNode
         , defaultSWFPath
         , defaultSelectedPath
         , emptyArchive
@@ -28,7 +29,8 @@ import Utils exposing (errorToString)
 
 type alias Model =
     { archive : Archive
-    , selectedPath : Archive
+    , selectedPath : List String
+    , focusedNode : Node
     , loadedPath : String
     , navbarState : Navbar.State
     , modalVisibility : Modal.Visibility
@@ -67,6 +69,7 @@ init =
     ( { archive = emptyArchive
       , selectedPath = defaultSelectedPath
       , loadedPath = defaultSWFPath
+      , focusedNode = defaultFocusedNode
       , navbarState = navbarState
       , modalVisibility = Modal.shown
       }
@@ -96,19 +99,22 @@ update msg model =
                             decodeString archiveDecoder res
                                 |> Result.toMaybe
                                 |> Maybe.withDefault emptyArchive
+
+                        rootFolder =
+                            archive |> List.head |> Maybe.withDefault defaultFocusedNode
                     in
-                    ( { model | archive = archive }, Cmd.none )
+                    ( { model | archive = archive, focusedNode = rootFolder }, Cmd.none )
 
         ResetTree ->
             ( { model | selectedPath = defaultSelectedPath }, Cmd.none )
 
-        TraverseTree _ ->
+        TraverseTree childName ->
             ( model
             , Cmd.none
             )
 
         LoadSWF ->
-            ( { model | loadedPath = makeSWFPath model.archive }, Cmd.none )
+            ( { model | loadedPath = makeSWFPath model.selectedPath }, Cmd.none )
 
         NavbarMsg state ->
             ( { model | navbarState = state }, Cmd.none )

@@ -3,6 +3,7 @@ module Archive exposing
     , Node(..)
     , archiveDecoder
     , archiveToString
+    , defaultFocusedNode
     , defaultSWFPath
     , defaultSelectedPath
     , emptyArchive
@@ -13,7 +14,9 @@ module Archive exposing
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Field as Field
+import List exposing (intersperse)
 import List.Extra exposing (mapAccuml)
+import Utils exposing (listToString)
 
 
 type alias Archive =
@@ -46,9 +49,12 @@ archiveToString archive =
         |> String.dropRight 1
 
 
-makeSWFPath : Archive -> String
-makeSWFPath archive =
-    archive |> archiveToString |> String.append pathHeader
+makeSWFPath : List String -> String
+makeSWFPath list =
+    list
+        |> List.intersperse "/"
+        |> listToString
+        |> String.append pathHeader
 
 
 archiveDecoder : Decoder Archive
@@ -114,18 +120,23 @@ pathHeader =
     "./cp-swf-archive/"
 
 
+defaultSelectedPath : List String
+defaultSelectedPath =
+    [ "2017"
+    , "parties"
+    , "waddle-on"
+    , "town.swf"
+    ]
+
+
 defaultSWFPath : String
 defaultSWFPath =
     makeSWFPath defaultSelectedPath
 
 
-defaultSelectedPath : Archive
-defaultSelectedPath =
-    [ Directory { name = "2017", contents = [] }
-    , Directory { name = "parties", contents = [] }
-    , Directory { name = "waddle-on", contents = [] }
-    , File "cove.swf"
-    ]
+defaultFocusedNode : Node
+defaultFocusedNode =
+    Report { directories = 0, files = 0 }
 
 
 emptyArchive : Archive
