@@ -6,9 +6,13 @@ module Archive exposing
     , defaultSWFPath
     , defaultSelectedPath
     , emptyArchive
+    , excludedExtensions
     , findChild
     , focusedChildren
+    , isDir
+    , isLabelExcluded
     , isSWF
+    , makePath
     , makeSWFPath
     , maxTreeDepth
     , nodeToString
@@ -19,6 +23,7 @@ module Archive exposing
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Field as Field
 import List exposing (intersperse)
+import List.Extra as UtilsExtra
 import Utils exposing (listToString)
 
 
@@ -122,17 +127,45 @@ findChild label node =
         |> Maybe.withDefault defaultFocusedNode
 
 
-makeSWFPath : List String -> String
-makeSWFPath list =
+isLabelExcluded : String -> Bool
+isLabelExcluded label =
+    let
+        extension =
+            label
+                |> String.split "."
+                |> UtilsExtra.last
+                |> Maybe.withDefault ""
+    in
+    List.member extension excludedExtensions
+
+
+excludedExtensions : List String
+excludedExtensions =
+    [ "json", "md" ]
+
+
+makePath : List String -> String
+makePath list =
     list
         |> List.intersperse "/"
         |> listToString
+
+
+makeSWFPath : List String -> String
+makeSWFPath list =
+    list
+        |> makePath
         |> String.append pathHeader
 
 
 isSWF : String -> Bool
 isSWF str =
     String.endsWith ".swf" str
+
+
+isDir : String -> Bool
+isDir str =
+    not (String.contains "." str)
 
 
 maxTreeDepth : Int

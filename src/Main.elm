@@ -11,9 +11,13 @@ import Archive
         , emptyArchive
         , findChild
         , focusedChildren
+        , isDir
+        , isLabelExcluded
         , isSWF
+        , makePath
         , makeSWFPath
         , nodeToString
+        , pathHeader
         , rootFolder
         )
 import Bootstrap.Button as Button
@@ -109,7 +113,7 @@ update msg model =
 
         ResetTree ->
             ( { model
-                | selectedPath = defaultSelectedPath
+                | selectedPath = []
                 , focusedNode = rootFolder model.archive
               }
             , Cmd.none
@@ -217,7 +221,19 @@ view model =
                 children =
                     focusedChildren model.focusedNode
                         |> List.map (\node -> nodeToString node)
-                        |> List.map (\str -> div [ onClick (TraverseTree str) ] [ text str ])
+                        |> List.filter (\label -> not (isLabelExcluded label))
+                        |> List.map
+                            (\str ->
+                                div [ onClick (TraverseTree str) ]
+                                    [ text
+                                        (if isDir str then
+                                            str ++ "/"
+
+                                         else
+                                            str
+                                        )
+                                    ]
+                            )
             in
             div [] children
 
@@ -225,11 +241,11 @@ view model =
             Grid.containerFluid []
                 [ Grid.row []
                     [ Grid.col [] [ strong [] [ text "Current path:" ] ]
-                    , Grid.col [] [ text "TODO" ]
+                    , Grid.col [] [ text (makePath model.selectedPath) ]
                     ]
                 , Grid.row []
                     [ Grid.col [] [ strong [] [ text "Loaded file:" ] ]
-                    , Grid.col [] [ text model.loadedPath ]
+                    , Grid.col [] [ text (String.replace pathHeader "" model.loadedPath) ]
                     ]
                 ]
 
