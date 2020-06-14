@@ -5,12 +5,16 @@ import Archive
         ( Archive
         , Node(..)
         , archiveDecoder
-        , archiveToString
         , defaultFocusedNode
         , defaultSWFPath
         , defaultSelectedPath
         , emptyArchive
+        , findChild
+        , focusedChildren
+        , isSWF
         , makeSWFPath
+        , nodeToString
+        , rootFolder
         )
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
@@ -23,6 +27,7 @@ import Html exposing (Html, button, div, embed, strong, text)
 import Html.Attributes exposing (height, href, id, src, width)
 import Html.Events exposing (onClick)
 import Json.Decode exposing (decodeString)
+import List.Extra as ListExtra
 import Requests exposing (ArchiveJSON(..), fetchArchive)
 import Utils exposing (errorToString)
 
@@ -99,17 +104,49 @@ update msg model =
                             decodeString archiveDecoder res
                                 |> Result.toMaybe
                                 |> Maybe.withDefault emptyArchive
-
-                        rootFolder =
-                            archive |> List.head |> Maybe.withDefault defaultFocusedNode
                     in
-                    ( { model | archive = archive, focusedNode = rootFolder }, Cmd.none )
+                    ( { model | archive = archive, focusedNode = rootFolder archive }, Cmd.none )
 
         ResetTree ->
-            ( { model | selectedPath = defaultSelectedPath }, Cmd.none )
+            ( { model
+                | selectedPath = defaultSelectedPath
+                , focusedNode = rootFolder model.archive
+              }
+            , Cmd.none
+            )
 
         TraverseTree childName ->
-            ( model
+            let
+                newFocus =
+                    if isSWF childName then
+                        rootFolder model.archive
+
+                    else
+                        findChild childName model.focusedNode
+
+                updatedPath =
+                    let
+                        lastSelectedPath =
+                            ListExtra.last model.selectedPath |> Maybe.withDefault ""
+                    in
+                    if isSWF lastSelectedPath then
+                        [ childName ]
+
+                    else
+                        model.selectedPath ++ [ childName ]
+
+                loadedPath =
+                    if isSWF childName then
+                        makeSWFPath updatedPath
+
+                    else
+                        model.loadedPath
+            in
+            ( { model
+                | focusedNode = newFocus
+                , selectedPath = updatedPath
+                , loadedPath = loadedPath
+              }
             , Cmd.none
             )
 
@@ -176,13 +213,19 @@ view model =
             ]
 
         modalBody =
-            div [] []
+            let
+                children =
+                    focusedChildren model.focusedNode
+                        |> List.map (\node -> nodeToString node)
+                        |> List.map (\str -> div [ onClick (TraverseTree str) ] [ text str ])
+            in
+            div [] children
 
         modalFooter =
             Grid.containerFluid []
                 [ Grid.row []
                     [ Grid.col [] [ strong [] [ text "Current path:" ] ]
-                    , Grid.col [] [ text (archiveToString model.archive) ]
+                    , Grid.col [] [ text "TODO" ]
                     ]
                 , Grid.row []
                     [ Grid.col [] [ strong [] [ text "Loaded file:" ] ]

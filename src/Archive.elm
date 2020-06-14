@@ -2,20 +2,23 @@ module Archive exposing
     ( Archive
     , Node(..)
     , archiveDecoder
-    , archiveToString
     , defaultFocusedNode
     , defaultSWFPath
     , defaultSelectedPath
     , emptyArchive
+    , findChild
+    , focusedChildren
+    , isSWF
     , makeSWFPath
     , maxTreeDepth
+    , nodeToString
     , pathHeader
+    , rootFolder
     )
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Field as Field
 import List exposing (intersperse)
-import List.Extra exposing (mapAccuml)
 import Utils exposing (listToString)
 
 
@@ -27,34 +30,6 @@ type Node
     = Directory { name : String, contents : List Node }
     | File String
     | Report { directories : Int, files : Int }
-
-
-archiveToString : Archive -> String
-archiveToString archive =
-    mapAccuml
-        (\acc node ->
-            case node of
-                Directory dir ->
-                    ( acc ++ dir.name ++ "/", node )
-
-                File name ->
-                    ( acc ++ name ++ "/", node )
-
-                Report _ ->
-                    ( acc, node )
-        )
-        ""
-        archive
-        |> Tuple.first
-        |> String.dropRight 1
-
-
-makeSWFPath : List String -> String
-makeSWFPath list =
-    list
-        |> List.intersperse "/"
-        |> listToString
-        |> String.append pathHeader
 
 
 archiveDecoder : Decoder Archive
@@ -108,6 +83,56 @@ reportDecoder =
                 \files ->
                     Decode.succeed
                         (Report { directories = directories, files = files })
+
+
+nodeToString : Node -> String
+nodeToString node =
+    case node of
+        Directory dir ->
+            dir.name
+
+        File name ->
+            name
+
+        Report _ ->
+            ""
+
+
+rootFolder : Archive -> Node
+rootFolder archive =
+    archive
+        |> List.head
+        |> Maybe.withDefault defaultFocusedNode
+
+
+focusedChildren : Node -> List Node
+focusedChildren node =
+    case node of
+        Directory dir ->
+            dir.contents
+
+        _ ->
+            []
+
+
+findChild : String -> Node -> Node
+findChild label node =
+    List.filter (\child -> nodeToString child == label) (focusedChildren node)
+        |> List.head
+        |> Maybe.withDefault defaultFocusedNode
+
+
+makeSWFPath : List String -> String
+makeSWFPath list =
+    list
+        |> List.intersperse "/"
+        |> listToString
+        |> String.append pathHeader
+
+
+isSWF : String -> Bool
+isSWF str =
+    String.endsWith ".swf" str
 
 
 maxTreeDepth : Int
