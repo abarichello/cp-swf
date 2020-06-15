@@ -28,7 +28,7 @@ import Bootstrap.Navbar as Navbar
 import Browser
 import Color
 import Html exposing (Html, button, div, embed, strong, text)
-import Html.Attributes exposing (height, href, id, src, style, width)
+import Html.Attributes exposing (href, id, src)
 import Html.Events exposing (onClick)
 import Json.Decode exposing (decodeString)
 import List.Extra as ListExtra

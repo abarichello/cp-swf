@@ -3,6 +3,7 @@ cp-swf-archive/
 *.html
 !index.html
 main.js
+archive.json
 
 # elm-package generated files
 elm-stuff
