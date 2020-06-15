@@ -28,7 +28,7 @@ import Bootstrap.Navbar as Navbar
 import Browser
 import Color
 import Html exposing (Html, button, div, embed, strong, text)
-import Html.Attributes exposing (height, href, id, src, width)
+import Html.Attributes exposing (height, href, id, src, style, width)
 import Html.Events exposing (onClick)
 import Json.Decode exposing (decodeString)
 import List.Extra as ListExtra
@@ -188,6 +188,7 @@ view model =
         navbar =
             Navbar.config NavbarMsg
                 |> Navbar.withAnimation
+                |> Navbar.attrs [ id "navbar" ]
                 |> Navbar.darkCustom (Color.rgb255 0 51 102)
                 |> Navbar.brand [ href "#" ] [ text "CP-SWF" ]
                 |> navbarItems
@@ -263,6 +264,6 @@ view model =
         [ navbar
         , dirModal
         , div [ id "swf-content" ]
-            [ embed [ id "swf", src model.loadedPath, width 2560, height 1440 ] []
+            [ embed [ id "swf", src model.loadedPath ] []
             ]
         ]

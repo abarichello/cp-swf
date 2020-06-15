@@ -31,3 +31,17 @@
 #hide-button {
     border-left-width: 10px;
 }
+
+#navbar {
+    height: 5vh !important;
+}
+
+#swf {
+    flex-grow: 1;
+}
+
+#swf-content {
+    display: flex;
+    height: 95vh;
+    width: 100vw;
+}
