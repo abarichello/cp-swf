@@ -241,12 +241,16 @@ view model =
         modalFooter =
             Grid.containerFluid []
                 [ Grid.row []
-                    [ Grid.col [] [ strong [] [ text "Current path:" ] ]
-                    , Grid.col [] [ text (makePath model.selectedPath) ]
+                    [ Grid.col []
+                        [ strong [] [ text "Current path: " ]
+                        , text (makePath model.selectedPath)
+                        ]
                     ]
                 , Grid.row []
-                    [ Grid.col [] [ strong [] [ text "Loaded file:" ] ]
-                    , Grid.col [] [ text (String.replace pathHeader "" model.loadedPath) ]
+                    [ Grid.col []
+                        [ strong [] [ text "Loaded file: " ]
+                        , text (String.replace pathHeader "" model.loadedPath)
+                        ]
                     ]
                 ]
 
