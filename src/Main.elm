@@ -43,6 +43,7 @@ type alias Model =
     , loadedPath : String
     , navbarState : Navbar.State
     , modalVisibility : Modal.Visibility
+    , debug : Bool
     }
 
 
@@ -56,24 +57,24 @@ type Msg
     | ToggleModal Modal.Visibility
 
 
-main : Program () Model Msg
+main : Program Bool Model Msg
 main =
     Browser.element
-        { init = \() -> init
+        { init = init
         , update = update
         , subscriptions = \_ -> Sub.none
         , view = view
         }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Bool -> ( Model, Cmd Msg )
+init debug =
     let
         ( navbarState, navbarCmd ) =
             Navbar.initialState NavbarMsg
 
         archiveRequest =
-            Cmd.map RequestArchive Requests.fetchArchive
+            Cmd.map RequestArchive (Requests.fetchArchive debug)
     in
     ( { archive = emptyArchive
       , selectedPath = defaultSelectedPath
@@ -81,6 +82,7 @@ init =
       , focusedNode = defaultFocusedNode
       , navbarState = navbarState
       , modalVisibility = Modal.shown
+      , debug = debug
       }
     , Cmd.batch [ navbarCmd, archiveRequest ]
     )

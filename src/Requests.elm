@@ -12,9 +12,19 @@ archiveEndpoint =
     "https://cpswf.barichello.me/cp-swf-archive/archive.json"
 
 
-fetchArchive : Cmd ArchiveJSON
-fetchArchive =
+debugEndpoint : String
+debugEndpoint =
+    "http://localhost:8000/cp-swf-archive/archive.json"
+
+
+fetchArchive : Bool -> Cmd ArchiveJSON
+fetchArchive debug =
     Http.get
-        { url = archiveEndpoint
+        { url =
+            if debug then
+                debugEndpoint
+
+            else
+                archiveEndpoint
         , expect = Http.expectString JSON
         }
