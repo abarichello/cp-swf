@@ -19,6 +19,7 @@ import Archive
         , nodeToString
         , pathHeader
         , rootFolder
+        , rootReportTotalFiles
         )
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
@@ -252,6 +253,12 @@ view model =
                     [ Grid.col []
                         [ strong [] [ text "Loaded file: " ]
                         , text (String.replace pathHeader "" model.loadedPath)
+                        ]
+                    ]
+                , Grid.row []
+                    [ Grid.col []
+                        [ strong [] [ text "Total archived files: " ]
+                        , text (String.fromInt (rootReportTotalFiles model.archive))
                         ]
                     ]
                 ]

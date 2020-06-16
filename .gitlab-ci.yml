@@ -30,8 +30,8 @@ pages:
   script:
     - rm -f *.md
     - mkdir -p public
-    - tree -J cp-swf-archive > public/archive.json
     - mv cp-swf-archive index.html main.js main.css public
+    - tree -J public/cp-swf-archive > public/cp-swf-archive/archive.json
     - git fetch
     - git checkout pages
   artifacts:

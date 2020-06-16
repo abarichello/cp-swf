@@ -18,12 +18,13 @@ module Archive exposing
     , nodeToString
     , pathHeader
     , rootFolder
+    , rootReportTotalFiles
     )
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Field as Field
 import List exposing (intersperse)
-import List.Extra as UtilsExtra
+import List.Extra as ListExtra
 import Utils exposing (listToString)
 
 
@@ -105,9 +106,27 @@ nodeToString node =
 
 rootFolder : Archive -> Node
 rootFolder archive =
+    -- Only works when used at the root archive
     archive
         |> List.head
         |> Maybe.withDefault defaultFocusedNode
+
+
+rootReportTotalFiles : Archive -> Int
+rootReportTotalFiles archive =
+    -- Only works when used at the root archive
+    let
+        node =
+            archive
+                |> ListExtra.last
+                |> Maybe.withDefault defaultFocusedNode
+    in
+    case node of
+        Report r ->
+            r.files
+
+        _ ->
+            0
 
 
 focusedChildren : Node -> List Node
@@ -133,7 +152,7 @@ isLabelExcluded label =
         extension =
             label
                 |> String.split "."
-                |> UtilsExtra.last
+                |> ListExtra.last
                 |> Maybe.withDefault ""
     in
     List.member extension excludedExtensions
@@ -205,5 +224,5 @@ emptyArchive =
             [ File "empty-archive"
             ]
         }
-    , Report { directories = 1, files = 1 }
+    , defaultFocusedNode
     ]
