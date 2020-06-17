@@ -17,10 +17,10 @@ import Archive
         , makePath
         , makeSWFPath
         , nodeToString
-        , pathHeader
         , rootFolder
         , rootReportTotalFiles
         )
+import Bootstrap.Badge as Badge
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
@@ -28,8 +28,8 @@ import Bootstrap.Modal as Modal
 import Bootstrap.Navbar as Navbar
 import Browser
 import Color
-import Html exposing (Html, button, div, embed, strong, text)
-import Html.Attributes exposing (href, id, src)
+import Html exposing (Html, b, button, div, embed, text, u)
+import Html.Attributes exposing (class, href, id, src)
 import Html.Events exposing (onClick)
 import Json.Decode exposing (decodeString)
 import List.Extra as ListExtra
@@ -205,40 +205,41 @@ view model =
                 , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf/blob/master/README.md" ] [ text "About" ]
                 ]
 
+        fileCounter =
+            div [ class "nav-link font-weight-bold text-light" ]
+                [ text "Total archived files"
+                , text ": "
+                , Badge.badgeLight [] [ text (String.fromInt (rootReportTotalFiles model.archive)) ]
+                ]
+
         navbar =
             Navbar.config NavbarMsg
                 |> Navbar.withAnimation
-                |> Navbar.attrs [ id "navbar" ]
+                |> Navbar.attrs [ id "navbar", class "navbar-nav mr-auto mt-2 mt-lg-0" ]
                 |> Navbar.darkCustom (Color.rgb255 0 51 102)
                 |> Navbar.brand [ href "#" ] [ text "CP-SWF" ]
                 |> navbarItems
+                |> Navbar.customItems [ Navbar.customItem fileCounter ]
                 |> Navbar.view model.navbarState
 
         modalHeader =
-            [ Grid.containerFluid []
+            Grid.containerFluid []
                 [ Grid.row []
                     [ Grid.col
                         [ Col.xs6 ]
-                        [ text "File" ]
-                    , Grid.col
-                        [ Col.xs6 ]
-                        [ Button.button
-                            [ Button.outlinePrimary
-                            , Button.attrs [ id "reset-button", onClick ResetTree ]
-                            ]
-                            [ text "Reset" ]
-                        , Button.button
-                            [ Button.outlinePrimary
-                            , Button.attrs [ id "hide-button", onClick (ToggleModal Modal.hidden) ]
-                            ]
-                            [ text "Hide" ]
-                        ]
+                        [ text "Files" ]
                     ]
                 ]
-            ]
 
         modalBody =
             let
+                breadcrumbs =
+                    if model.selectedPath == defaultSelectedPath then
+                        ""
+
+                    else
+                        makePath model.selectedPath
+
                 children =
                     focusedChildren model.focusedNode
                         |> List.map (\node -> nodeToString node)
@@ -255,27 +256,26 @@ view model =
                                         )
                                     ]
                             )
+                        |> List.append [ u [] [ b [] [ text breadcrumbs ] ] ]
             in
             div [] children
 
         modalFooter =
             Grid.containerFluid []
                 [ Grid.row []
-                    [ Grid.col []
-                        [ strong [] [ text "Current path: " ]
-                        , text (makePath model.selectedPath)
+                    [ Grid.col [ Col.xs6 ]
+                        [ Button.button
+                            [ Button.outlinePrimary
+                            , Button.attrs [ id "reset-button", onClick ResetTree ]
+                            ]
+                            [ text "Reset" ]
                         ]
-                    ]
-                , Grid.row []
-                    [ Grid.col []
-                        [ strong [] [ text "Loaded file: " ]
-                        , text (String.replace pathHeader "" model.loadedPath)
-                        ]
-                    ]
-                , Grid.row []
-                    [ Grid.col []
-                        [ strong [] [ text "Total archived files: " ]
-                        , text (String.fromInt (rootReportTotalFiles model.archive))
+                    , Grid.col [ Col.xs6 ]
+                        [ Button.button
+                            [ Button.outlinePrimary
+                            , Button.attrs [ id "hide-button", onClick (ToggleModal Modal.hidden) ]
+                            ]
+                            [ text "Hide" ]
                         ]
                     ]
                 ]
@@ -284,7 +284,7 @@ view model =
             Grid.container []
                 [ Modal.config None
                     |> Modal.small
-                    |> Modal.h5 [] modalHeader
+                    |> Modal.h5 [] [ modalHeader ]
                     |> Modal.body [] [ modalBody ]
                     |> Modal.footer [] [ modalFooter ]
                     |> Modal.view model.modalVisibility
