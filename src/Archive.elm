@@ -14,7 +14,6 @@ module Archive exposing
     , isSWF
     , makePath
     , makeSWFPath
-    , maxTreeDepth
     , nodeToString
     , pathHeader
     , rootFolder
@@ -185,11 +184,6 @@ isSWF str =
 isDir : String -> Bool
 isDir str =
     not (String.contains "." str)
-
-
-maxTreeDepth : Int
-maxTreeDepth =
-    4
 
 
 pathHeader : String

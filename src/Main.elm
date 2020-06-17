@@ -124,34 +124,51 @@ update msg model =
 
         TraverseTree childName ->
             let
-                newFocus =
+                lastSelectedPath =
+                    ListExtra.last model.selectedPath |> Maybe.withDefault ""
+
+                replace =
+                    isSWF childName && isSWF lastSelectedPath
+
+                focusedNode =
                     if isSWF childName then
-                        rootFolder model.archive
+                        model.focusedNode
 
                     else
                         findChild childName model.focusedNode
 
-                updatedPath =
-                    let
-                        lastSelectedPath =
-                            ListExtra.last model.selectedPath |> Maybe.withDefault ""
-                    in
-                    if isSWF lastSelectedPath then
-                        [ childName ]
+                selectedPath =
+                    if replace then
+                        let
+                            uncons =
+                                ListExtra.unconsLast model.selectedPath
+                                    |> Maybe.withDefault ( "", [] )
+                                    |> Tuple.second
+                        in
+                        List.append uncons [ childName ]
 
                     else
-                        model.selectedPath ++ [ childName ]
+                        let
+                            breadcrumbs =
+                                -- Empty the breadcrumbs list
+                                if model.selectedPath == defaultSelectedPath then
+                                    []
+
+                                else
+                                    model.selectedPath
+                        in
+                        breadcrumbs ++ [ childName ]
 
                 loadedPath =
                     if isSWF childName then
-                        makeSWFPath updatedPath
+                        makeSWFPath selectedPath
 
                     else
                         model.loadedPath
             in
             ( { model
-                | focusedNode = newFocus
-                , selectedPath = updatedPath
+                | focusedNode = focusedNode
+                , selectedPath = selectedPath
                 , loadedPath = loadedPath
               }
             , Cmd.none
@@ -273,7 +290,7 @@ view model =
                     |> Modal.view model.modalVisibility
                 ]
     in
-    div []
+    div [ id "main" ]
         [ navbar
         , dirModal
         , div [ id "swf-content" ]
