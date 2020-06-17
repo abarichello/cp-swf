@@ -28,8 +28,8 @@ import Bootstrap.Modal as Modal
 import Bootstrap.Navbar as Navbar
 import Browser
 import Color
-import Html exposing (Html, b, button, div, embed, text, u)
-import Html.Attributes exposing (class, href, id, src)
+import Html exposing (Attribute, Html, b, button, div, embed, text, u)
+import Html.Attributes exposing (class, href, id, src, style)
 import Html.Events exposing (onClick)
 import Json.Decode exposing (decodeString)
 import List.Extra as ListExtra
@@ -184,8 +184,8 @@ update msg model =
             ( { model | modalVisibility = vis }, Cmd.none )
 
 
-toggleModalVis : Model -> Modal.Visibility
-toggleModalVis model =
+oppositeModalVisibility : Model -> Modal.Visibility
+oppositeModalVisibility model =
     if model.modalVisibility == Modal.shown then
         Modal.hidden
 
@@ -193,12 +193,21 @@ toggleModalVis model =
         Modal.shown
 
 
+modalVisibilityStyle : Model -> Attribute msg
+modalVisibilityStyle model =
+    if model.modalVisibility == Modal.shown then
+        style "display" "flex"
+
+    else
+        style "display" "none"
+
+
 view : Model -> Html Msg
 view model =
     let
         navbarItems =
             Navbar.items
-                [ Navbar.itemLink [ onClick (ToggleModal (toggleModalVis model)), href "#" ] [ text "Files" ]
+                [ Navbar.itemLink [ onClick (ToggleModal (oppositeModalVisibility model)), href "#" ] [ text "Files" ]
                 , Navbar.itemLink [ href "https://gitlab.com/BARICHELLO/cp-swf-archive" ] [ text "Archive" ]
                 , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf" ] [ text "Source code" ]
                 , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf/blob/master/LICENSE" ] [ text "License" ]
@@ -258,7 +267,7 @@ view model =
                             )
                         |> List.append [ u [] [ b [] [ text breadcrumbs ] ] ]
             in
-            div [] children
+            div [ id "file-list" ] children
 
         modalFooter =
             Grid.containerFluid []
@@ -281,7 +290,7 @@ view model =
                 ]
 
         dirModal =
-            Grid.container []
+            Grid.container [ modalVisibilityStyle model ]
                 [ Modal.config None
                     |> Modal.small
                     |> Modal.h5 [] [ modalHeader ]
