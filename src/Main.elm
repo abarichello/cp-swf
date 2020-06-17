@@ -218,7 +218,7 @@ view model =
             div [ class "nav-link font-weight-bold text-light" ]
                 [ text "Total archived files"
                 , text ": "
-                , Badge.badgeLight [] [ text (String.fromInt (rootReportTotalFiles model.archive)) ]
+                , Badge.pillLight [ class "" ] [ text (String.fromInt (rootReportTotalFiles model.archive)) ]
                 ]
 
         navbar =
@@ -255,7 +255,7 @@ view model =
                         |> List.filter (\label -> not (isLabelExcluded label))
                         |> List.map
                             (\str ->
-                                div [ onClick (TraverseTree str) ]
+                                div [ class "dir-link", onClick (TraverseTree str) ]
                                     [ text
                                         (if isDir str then
                                             str ++ "/"
@@ -272,16 +272,16 @@ view model =
         modalFooter =
             Grid.containerFluid []
                 [ Grid.row []
-                    [ Grid.col [ Col.xs6 ]
+                    [ Grid.col [ Col.xs ]
                         [ Button.button
-                            [ Button.outlinePrimary
+                            [ Button.outlineLight
                             , Button.attrs [ id "reset-button", onClick ResetTree ]
                             ]
                             [ text "Reset" ]
                         ]
-                    , Grid.col [ Col.xs6 ]
+                    , Grid.col [ Col.xs ]
                         [ Button.button
-                            [ Button.outlinePrimary
+                            [ Button.outlineLight
                             , Button.attrs [ id "hide-button", onClick (ToggleModal Modal.hidden) ]
                             ]
                             [ text "Hide" ]

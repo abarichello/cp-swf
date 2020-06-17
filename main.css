@@ -28,6 +28,10 @@
     border: 1px solid whitesmoke;
 }
 
+.dir-link:hover {
+    cursor: pointer;
+}
+
 #reset-button,
 #hide-button {
     border-left-width: 10px;
