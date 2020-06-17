@@ -215,7 +215,7 @@ view model =
         navbar =
             Navbar.config NavbarMsg
                 |> Navbar.withAnimation
-                |> Navbar.attrs [ id "navbar", class "navbar-nav mr-auto mt-2 mt-lg-0" ]
+                |> Navbar.attrs [ id "navbar" ]
                 |> Navbar.darkCustom (Color.rgb255 0 51 102)
                 |> Navbar.brand [ href "#" ] [ text "CP-SWF" ]
                 |> navbarItems
