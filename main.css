@@ -32,8 +32,7 @@
     cursor: pointer;
 }
 
-#reset-button,
-#hide-button {
+.btn {
     border-left-width: 10px;
 }
 

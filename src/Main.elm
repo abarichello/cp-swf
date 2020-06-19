@@ -56,6 +56,7 @@ type Msg
     | ResetTree
     | TraverseTree String
     | LoadFileFromQuery String
+    | CopyURL
     | NavbarMsg Navbar.State
     | ToggleModal Modal.Visibility
 
@@ -64,6 +65,9 @@ port urlReceiver : (String -> msg) -> Sub msg
 
 
 port sendSetPageQuery : String -> Cmd msg
+
+
+port sendSetClipboard : () -> Cmd msg
 
 
 subscriptions : Model -> Sub Msg
@@ -213,6 +217,9 @@ update msg model =
             in
             ( { model | loadedPath = loadedPath }, Cmd.none )
 
+        CopyURL ->
+            ( model, sendSetClipboard () )
+
         NavbarMsg state ->
             ( { model | navbarState = state }, Cmd.none )
 
@@ -309,14 +316,21 @@ view model =
                     [ Grid.col [ Col.xs ]
                         [ Button.button
                             [ Button.outlineLight
-                            , Button.attrs [ id "reset-button", onClick ResetTree ]
+                            , Button.attrs [ onClick ResetTree ]
                             ]
                             [ text "Reset" ]
                         ]
                     , Grid.col [ Col.xs ]
                         [ Button.button
                             [ Button.outlineLight
-                            , Button.attrs [ id "hide-button", onClick (ToggleModal Modal.hidden) ]
+                            , Button.attrs [ onClick CopyURL ]
+                            ]
+                            [ text "Copy Link" ]
+                        ]
+                    , Grid.col [ Col.xs ]
+                        [ Button.button
+                            [ Button.outlineLight
+                            , Button.attrs [ onClick (ToggleModal Modal.hidden) ]
                             ]
                             [ text "Hide" ]
                         ]

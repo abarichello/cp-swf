@@ -8,4 +8,8 @@ function startPorts(elm) {
             history.pushState({}, "", "/")
         }
     })
+
+    elm.ports.sendSetClipboard.subscribe(async () => {
+        await navigator.clipboard.writeText(window.location.href)
+    })
 }
