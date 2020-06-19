@@ -1,6 +1,18 @@
-module Utils exposing (errorToString, listToString)
+module Utils exposing (defaultURL, errorToString, listToString)
 
 import Http exposing (Error(..))
+import Url exposing (Protocol(..), Url)
+
+
+defaultURL : Url
+defaultURL =
+    { protocol = Https
+    , host = "cpswf.barichello.me"
+    , port_ = Nothing
+    , path = "/"
+    , query = Nothing
+    , fragment = Nothing
+    }
 
 
 listToString : List String -> String

@@ -1,4 +1,4 @@
-module Main exposing (Msg(..), main, update, view)
+port module Main exposing (Msg(..), main, update, view)
 
 import Archive
     exposing
@@ -17,6 +17,7 @@ import Archive
         , makePath
         , makeSWFPath
         , nodeToString
+        , pathHeader
         , rootFolder
         , rootReportTotalFiles
         )
@@ -34,7 +35,8 @@ import Html.Events exposing (onClick)
 import Json.Decode exposing (decodeString)
 import List.Extra as ListExtra
 import Requests exposing (ArchiveJSON(..), fetchArchive)
-import Utils exposing (errorToString)
+import Url
+import Utils exposing (defaultURL, errorToString)
 
 
 type alias Model =
@@ -54,8 +56,17 @@ type Msg
     | ResetTree
     | TraverseTree String
     | LoadSWF
+    | LoadFileFromQuery String
     | NavbarMsg Navbar.State
     | ToggleModal Modal.Visibility
+
+
+port urlReceiver : (String -> msg) -> Sub msg
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    urlReceiver LoadFileFromQuery
 
 
 main : Program Bool Model Msg
@@ -63,7 +74,7 @@ main =
     Browser.element
         { init = init
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         , view = view
         }
 
@@ -177,6 +188,25 @@ update msg model =
         LoadSWF ->
             ( { model | loadedPath = makeSWFPath model.selectedPath }, Cmd.none )
 
+        LoadFileFromQuery url ->
+            let
+                query =
+                    Url.fromString url
+                        |> Maybe.withDefault defaultURL
+                        |> .query
+                        |> Maybe.withDefault ""
+
+                loadedPath =
+                    if query == "" then
+                        model.loadedPath
+
+                    else
+                        query
+                            |> String.dropLeft 5
+                            |> String.append pathHeader
+            in
+            ( { model | loadedPath = loadedPath }, Cmd.none )
+
         NavbarMsg state ->
             ( { model | navbarState = state }, Cmd.none )
 
@@ -206,19 +236,17 @@ view : Model -> Html Msg
 view model =
     let
         navbarItems =
-            Navbar.items
-                [ Navbar.itemLink [ onClick (ToggleModal (oppositeModalVisibility model)), href "#" ] [ text "Files" ]
-                , Navbar.itemLink [ href "https://gitlab.com/BARICHELLO/cp-swf-archive" ] [ text "Archive" ]
-                , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf" ] [ text "Source code" ]
-                , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf/blob/master/LICENSE" ] [ text "License" ]
-                , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf/blob/master/README.md" ] [ text "About" ]
-                ]
+            [ Navbar.itemLink [ onClick (ToggleModal (oppositeModalVisibility model)), href "#" ] [ text "Files" ]
+            , Navbar.itemLink [ href "https://gitlab.com/BARICHELLO/cp-swf-archive" ] [ text "Archive" ]
+            , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf" ] [ text "Source code" ]
+            , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf/blob/master/LICENSE" ] [ text "License" ]
+            , Navbar.itemLink [ href "https://github.com/aBARICHELLO/cp-swf/blob/master/README.md" ] [ text "About" ]
+            ]
 
         fileCounter =
             div [ class "nav-link font-weight-bold text-light" ]
-                [ text "Total archived files"
-                , text ": "
-                , Badge.pillLight [ class "" ] [ text (String.fromInt (rootReportTotalFiles model.archive)) ]
+                [ text "Total archived files: "
+                , Badge.pillLight [] [ text (String.fromInt (rootReportTotalFiles model.archive)) ]
                 ]
 
         navbar =
@@ -227,7 +255,7 @@ view model =
                 |> Navbar.attrs [ id "navbar" ]
                 |> Navbar.darkCustom (Color.rgb255 0 51 102)
                 |> Navbar.brand [ href "#" ] [ text "CP-SWF" ]
-                |> navbarItems
+                |> Navbar.items navbarItems
                 |> Navbar.customItems [ Navbar.customItem fileCounter ]
                 |> Navbar.view model.navbarState
 

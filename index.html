@@ -22,7 +22,9 @@
             flags: false, // debug mode
         })
 
-        // All this code was written to support this project on Chrome-based browsers
+        elm.ports.urlReceiver.send(window.location.href)
+
+        // All this code below was written to support this project on Chrome-based browsers
         // Updating the src attribute is enough on Firefox/Opera/etc to change the SWF but
         // because of a 'wontfix' bug on Chrome you have to remove and readd the element for it to update
         // https://bugs.chromium.org/p/chromium/issues/detail?id=69648
