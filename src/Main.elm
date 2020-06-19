@@ -55,13 +55,15 @@ type Msg
     | RequestArchive ArchiveJSON
     | ResetTree
     | TraverseTree String
-    | LoadSWF
     | LoadFileFromQuery String
     | NavbarMsg Navbar.State
     | ToggleModal Modal.Visibility
 
 
 port urlReceiver : (String -> msg) -> Sub msg
+
+
+port sendSetPageQuery : String -> Cmd msg
 
 
 subscriptions : Model -> Sub Msg
@@ -130,7 +132,7 @@ update msg model =
                 | selectedPath = []
                 , focusedNode = rootFolder model.archive
               }
-            , Cmd.none
+            , sendSetPageQuery ""
             )
 
         TraverseTree childName ->
@@ -176,17 +178,21 @@ update msg model =
 
                     else
                         model.loadedPath
+
+                cmd =
+                    if isSWF childName then
+                        sendSetPageQuery (loadedPath |> String.replace pathHeader "")
+
+                    else
+                        Cmd.none
             in
             ( { model
                 | focusedNode = focusedNode
                 , selectedPath = selectedPath
                 , loadedPath = loadedPath
               }
-            , Cmd.none
+            , cmd
             )
-
-        LoadSWF ->
-            ( { model | loadedPath = makeSWFPath model.selectedPath }, Cmd.none )
 
         LoadFileFromQuery url ->
             let
