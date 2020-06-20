@@ -5,9 +5,9 @@ import Archive
         ( Archive
         , Node(..)
         , archiveDecoder
+        , defaultBreadcrumbs
         , defaultFocusedNode
         , defaultSWFPath
-        , defaultSelectedPath
         , emptyArchive
         , findChild
         , focusedChildren
@@ -36,12 +36,12 @@ import Json.Decode exposing (decodeString)
 import List.Extra as ListExtra
 import Requests exposing (ArchiveJSON(..), fetchArchive)
 import Url
-import Utils exposing (defaultURL, errorToString)
+import Utils exposing (defaultURL)
 
 
 type alias Model =
     { archive : Archive
-    , selectedPath : List String
+    , breadcrumbs : List String
     , focusedNode : Node
     , loadedPath : String
     , navbarState : Navbar.State
@@ -95,7 +95,7 @@ init debug =
             Cmd.map RequestArchive (Requests.fetchArchive debug)
     in
     ( { archive = emptyArchive
-      , selectedPath = defaultSelectedPath
+      , breadcrumbs = defaultBreadcrumbs
       , loadedPath = defaultSWFPath
       , focusedNode = defaultFocusedNode
       , navbarState = navbarState
@@ -116,16 +116,9 @@ update msg model =
             case response of
                 JSON result ->
                     let
-                        res =
-                            case result of
-                                Ok value ->
-                                    value
-
-                                Err err ->
-                                    errorToString err
-
                         archive =
-                            decodeString archiveDecoder res
+                            Result.withDefault "JSON Error" result
+                                |> decodeString archiveDecoder
                                 |> Result.toMaybe
                                 |> Maybe.withDefault emptyArchive
                     in
@@ -133,7 +126,7 @@ update msg model =
 
         ResetTree ->
             ( { model
-                | selectedPath = []
+                | breadcrumbs = []
                 , focusedNode = rootFolder model.archive
               }
             , sendSetPageQuery ""
@@ -141,11 +134,11 @@ update msg model =
 
         TraverseTree childName ->
             let
-                lastSelectedPath =
-                    ListExtra.last model.selectedPath |> Maybe.withDefault ""
+                lastBreadcrumb =
+                    ListExtra.last model.breadcrumbs |> Maybe.withDefault ""
 
-                replace =
-                    isSWF childName && isSWF lastSelectedPath
+                replaceLastBreadCrumb =
+                    isSWF childName && isSWF lastBreadcrumb
 
                 focusedNode =
                     if isSWF childName then
@@ -154,11 +147,11 @@ update msg model =
                     else
                         findChild childName model.focusedNode
 
-                selectedPath =
-                    if replace then
+                breadcrumbs =
+                    if replaceLastBreadCrumb then
                         let
                             uncons =
-                                ListExtra.unconsLast model.selectedPath
+                                ListExtra.unconsLast model.breadcrumbs
                                     |> Maybe.withDefault ( "", [] )
                                     |> Tuple.second
                         in
@@ -166,19 +159,18 @@ update msg model =
 
                     else
                         let
-                            breadcrumbs =
-                                -- Empty the breadcrumbs list
-                                if model.selectedPath == defaultSelectedPath then
+                            crumbs =
+                                if model.breadcrumbs == defaultBreadcrumbs then
                                     []
 
                                 else
-                                    model.selectedPath
+                                    model.breadcrumbs
                         in
-                        breadcrumbs ++ [ childName ]
+                        crumbs ++ [ childName ]
 
                 loadedPath =
                     if isSWF childName then
-                        makeSWFPath selectedPath
+                        makeSWFPath breadcrumbs
 
                     else
                         model.loadedPath
@@ -192,7 +184,7 @@ update msg model =
             in
             ( { model
                 | focusedNode = focusedNode
-                , selectedPath = selectedPath
+                , breadcrumbs = breadcrumbs
                 , loadedPath = loadedPath
               }
             , cmd
@@ -283,12 +275,12 @@ view model =
 
         modalBody =
             let
-                breadcrumbs =
-                    if model.selectedPath == defaultSelectedPath then
+                breadcrumbText =
+                    if model.breadcrumbs == defaultBreadcrumbs then
                         ""
 
                     else
-                        makePath model.selectedPath
+                        makePath model.breadcrumbs
 
                 children =
                     focusedChildren model.focusedNode
@@ -306,7 +298,7 @@ view model =
                                         )
                                     ]
                             )
-                        |> List.append [ u [] [ b [] [ text breadcrumbs ] ] ]
+                        |> List.append [ u [] [ b [] [ text breadcrumbText ] ] ]
             in
             div [ id "file-list" ] children
 

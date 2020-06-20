@@ -2,9 +2,9 @@ module Archive exposing
     ( Archive
     , Node(..)
     , archiveDecoder
+    , defaultBreadcrumbs
     , defaultFocusedNode
     , defaultSWFPath
-    , defaultSelectedPath
     , emptyArchive
     , excludedExtensions
     , findChild
@@ -191,8 +191,8 @@ pathHeader =
     "./cp-swf-archive/"
 
 
-defaultSelectedPath : List String
-defaultSelectedPath =
+defaultBreadcrumbs : List String
+defaultBreadcrumbs =
     [ "2017"
     , "parties"
     , "waddle-on"
@@ -202,7 +202,7 @@ defaultSelectedPath =
 
 defaultSWFPath : String
 defaultSWFPath =
-    makeSWFPath defaultSelectedPath
+    makeSWFPath defaultBreadcrumbs
 
 
 defaultFocusedNode : Node
