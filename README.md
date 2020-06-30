@@ -2,6 +2,11 @@
 
 An interactive archive of Club Penguin SWFs by year.
 
+<figure>
+    <a href="https://cpswf.barichello.me/">
+    <img src="https://i.imgur.com/4kwlNLC.png"></a>
+</figure>
+
 # About
 ## Archive
 
