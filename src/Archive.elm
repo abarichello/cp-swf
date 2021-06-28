@@ -22,7 +22,6 @@ module Archive exposing
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Field as Field
-import List exposing (intersperse)
 import List.Extra as ListExtra
 import Utils exposing (listToString)
 

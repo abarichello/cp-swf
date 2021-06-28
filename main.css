@@ -42,6 +42,8 @@
 
 #swf {
     flex-grow: 1;
+    width: auto !important;
+    height: auto !important;
 }
 
 #swf-content {

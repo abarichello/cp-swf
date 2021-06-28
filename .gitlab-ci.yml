@@ -30,7 +30,7 @@ pages:
   script:
     - rm -f *.md
     - mkdir -p public
-    - mv cp-swf-archive index.html main.js ports.js main.css public
+    - mv cp-swf-archive index.html main.js ports.js main.css ruffle public
     - tree -J public/cp-swf-archive > public/cp-swf-archive/archive.json
     - git fetch
     - git checkout pages

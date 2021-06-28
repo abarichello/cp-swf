@@ -29,12 +29,12 @@ import Bootstrap.Modal as Modal
 import Bootstrap.Navbar as Navbar
 import Browser
 import Color
-import Html exposing (Attribute, Html, b, button, div, embed, text, u)
+import Html exposing (Attribute, Html, b, div, embed, text, u)
 import Html.Attributes exposing (class, href, id, src, style)
 import Html.Events exposing (onClick)
 import Json.Decode exposing (decodeString)
 import List.Extra as ListExtra
-import Requests exposing (ArchiveJSON(..), fetchArchive)
+import Requests exposing (ArchiveJSON(..))
 import Url
 import Utils exposing (defaultURL)
 
