@@ -29,7 +29,9 @@ pages:
     - make
   script:
     - rm -f *.md
-    - mkdir -p public
+    - mkdir -p public ruffle
+    - wget --output-document ruffle.zip https://github.com/ruffle-rs/ruffle/releases/download/nightly-2021-06-27/ruffle-nightly-2021_06_27-web-selfhosted.zip
+    - unzip ruffle.zip -d ruffle
     - mv cp-swf-archive index.html main.js ports.js main.css ruffle public
     - tree -J public/cp-swf-archive > public/cp-swf-archive/archive.json
     - git fetch
